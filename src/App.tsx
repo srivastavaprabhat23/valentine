@@ -80,7 +80,7 @@ export default function ValentinesSpecial() {
           <motion.h1 initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-5xl md:text-7xl font-bold text-pink-600 mb-4">Yayyyy!! 🎉</motion.h1>
           <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="text-2xl md:text-4xl font-semibold text-red-500 mb-8">Best decision ever ❤️</motion.h2>
           <img src="https://res.cloudinary.com/dpnadwynk/image/upload/v1770967027/f1-movie_vzgs3s.gif" className="mx-auto rounded-2xl w-72 md:w-96 mb-8 shadow-lg" alt="celebration" />
-          <p className="text-3xl font-bold text-pink-500 animate-pulse">I love you Shivani 💖</p>
+          <p className="text-3xl font-bold text-pink-500 animate-pulse">I love you 💖</p>
         </div>
       </div>
     );
