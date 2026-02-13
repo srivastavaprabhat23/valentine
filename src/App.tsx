@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import confetti from "canvas-confetti";
 
@@ -27,33 +27,45 @@ export default function ValentinesSpecial() {
   };
 
   const generateRandomPosition = () => {
-    const btnWidth = 160;
+    const btnWidth = 160; 
     const btnHeight = 60;
-    
-    // TARGETED AVOIDANCE: Only avoid the specific 'Yes' button area
-    // This is a small box in the center-left (or center-top on mobile)
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
+
+    // Define exactly where the 'Yes' button sits on the screen
+    // On desktop it's usually center-ish, on mobile it's stacked.
+    const yesButtonArea = {
+      left: windowWidth / 2 - 120, 
+      right: windowWidth / 2 + 120,
+      top: windowHeight / 2 - 100,
+      bottom: windowHeight / 2 + 150,
+    };
 
     let newX, newY;
     let attempts = 0;
 
     do {
+      // Pick a random spot
       newX = Math.max(10, Math.floor(Math.random() * (windowWidth - btnWidth)));
       newY = Math.max(10, Math.floor(Math.random() * (windowHeight - btnHeight)));
-      
-      // Calculate distance from the center where the buttons live
-     // const distToCenterX = Math.abs(newX - (windowWidth / 2 - 80)); 
-      //const distToCenterY = Math.abs(newY - (windowHeight / 2 + 50)); 
-
       attempts++;
-      // If the button is too close to the 'Yes' position (approx 100px radius), try again
-    } while (attempts < 50 && (Math.abs(newX - (windowWidth / 2)) < 150 && Math.abs(newY - (windowHeight / 2)) < 150));
+
+      // Check for overlap with the Yes button area
+      const overlapsX = newX + btnWidth > yesButtonArea.left && newX < yesButtonArea.right;
+      const overlapsY = newY + btnHeight > yesButtonArea.top && newY < yesButtonArea.bottom;
+
+      if (!(overlapsX && overlapsY)) break; 
+    } while (attempts < 100);
 
     return { x: newX, y: newY };
   };
 
-  const moveButton = () => {
+  const moveButton = (e: React.MouseEvent | React.TouchEvent) => {
+    // Prevent default to stop mobile "ghost clicks" or scrolling
+    if (e.type === 'touchstart') {
+       // e.preventDefault(); // Uncomment if you want to block all other touch actions
+    }
+    
     if (!isFloating) setIsFloating(true);
     setNoPosition(generateRandomPosition());
     setPulseTrigger((prev) => prev + 1);
@@ -74,20 +86,19 @@ export default function ValentinesSpecial() {
   }
 
   return (
-    <div className="fixed inset-0 w-screen h-screen flex items-center justify-center bg-gradient-to-br from-pink-200 via-red-100 to-pink-300 overflow-hidden">
+    <div className="fixed inset-0 w-screen h-screen flex items-center justify-center bg-gradient-to-br from-pink-200 via-red-100 to-pink-300 overflow-hidden touch-none">
       <audio ref={audioRef} src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=romantic-love-111017.mp3" autoPlay loop />
 
-      {/* Main Card */}
       <div className="relative z-10 w-[85%] max-w-2xl p-10 md:p-20 text-center shadow-[0_20px_50px_rgba(255,182,193,0.5)] rounded-[3rem] bg-white/90 backdrop-blur-sm border border-white">
         <h1 className="text-4xl md:text-6xl font-black text-red-500 mb-16 leading-tight drop-shadow-sm">
           Shivani, will you be my Valentine? 💖
         </h1>
 
         <div className="flex flex-col md:flex-row items-center justify-center gap-6">
-          <motion.div key={pulseTrigger} animate={{ scale: [1, 1.15, 1] }} transition={{ duration: 0.3 }}>
+          <motion.div key={pulseTrigger} animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 0.2 }}>
             <button
               onClick={handleAccept}
-              className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white text-xl md:text-2xl w-40 md:w-48 py-4 md:py-5 rounded-full font-bold shadow-lg transition-all active:scale-90"
+              className="bg-gradient-to-r from-red-500 to-pink-500 text-white text-xl md:text-2xl w-40 md:w-48 py-4 md:py-5 rounded-full font-bold shadow-lg active:scale-90"
             >
               Yes ❤️
             </button>
@@ -97,7 +108,7 @@ export default function ValentinesSpecial() {
             <button
               onMouseEnter={moveButton}
               onTouchStart={moveButton}
-              className="bg-slate-200 text-slate-600 text-xl md:text-2xl w-40 md:w-48 py-4 md:py-5 rounded-full font-bold border-2 border-slate-300 transition-all"
+              className="bg-slate-200 text-slate-600 text-xl md:text-2xl w-40 md:w-48 py-4 md:py-5 rounded-full font-bold border-2 border-slate-300"
             >
               No 😢
             </button>
@@ -105,17 +116,16 @@ export default function ValentinesSpecial() {
         </div>
       </div>
 
-      {/* Floating "No" Button */}
       {isFloating && (
         <motion.div
-          className="fixed z-50 pointer-events-auto"
+          className="fixed z-50"
           animate={{ x: noPosition.x, y: noPosition.y }}
-          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+          transition={{ type: "spring", stiffness: 600, damping: 30 }}
           onMouseEnter={moveButton}
           onTouchStart={moveButton}
           style={{ top: 0, left: 0 }}
         >
-          <button className="bg-slate-200 text-slate-600 text-xl w-40 py-4 rounded-full font-bold shadow-xl border border-slate-300">
+          <button className="bg-slate-200 text-slate-600 text-xl w-40 py-4 rounded-full font-bold shadow-xl border border-slate-300 pointer-events-auto">
             No 😢
           </button>
         </motion.div>
