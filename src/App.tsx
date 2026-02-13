@@ -43,7 +43,7 @@ export default function ValentinesSpecial() {
       newY = Math.max(10, Math.floor(Math.random() * (windowHeight - btnHeight)));
       
       // Calculate distance from the center where the buttons live
-      const distToCenterX = Math.abs(newX - (windowWidth / 2 - 80)); 
+     // const distToCenterX = Math.abs(newX - (windowWidth / 2 - 80)); 
       const distToCenterY = Math.abs(newY - (windowHeight / 2 + 50)); 
 
       attempts++;
