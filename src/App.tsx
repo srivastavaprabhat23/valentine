@@ -30,33 +30,30 @@ export default function ValentinesSpecial() {
     const btnWidth = 160;
     const btnHeight = 60;
     
-    // Get the center card's position to avoid it
-    const safeZone = {
-      left: window.innerWidth / 2 - 250,
-      right: window.innerWidth / 2 + 250,
-      top: window.innerHeight / 2 - 200,
-      bottom: window.innerHeight / 2 + 200,
-    };
+    // TARGETED AVOIDANCE: Only avoid the specific 'Yes' button area
+    // This is a small box in the center-left (or center-top on mobile)
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
 
     let newX, newY;
     let attempts = 0;
 
-    // Keep generating until the "No" button is outside the center card area
     do {
-      newX = Math.max(20, Math.floor(Math.random() * (window.innerWidth - btnWidth)));
-      newY = Math.max(20, Math.floor(Math.random() * (window.innerHeight - btnHeight)));
+      newX = Math.max(10, Math.floor(Math.random() * (windowWidth - btnWidth)));
+      newY = Math.max(10, Math.floor(Math.random() * (windowHeight - btnHeight)));
+      
+      // Calculate distance from the center where the buttons live
+      const distToCenterX = Math.abs(newX - (windowWidth / 2 - 80)); 
+      const distToCenterY = Math.abs(newY - (windowHeight / 2 + 50)); 
+
       attempts++;
-      // Break after 20 attempts to prevent infinite loop (fallback)
-    } while (
-      attempts < 20 &&
-      newX > safeZone.left && newX < safeZone.right &&
-      newY > safeZone.top && newY < safeZone.bottom
-    );
+      // If the button is too close to the 'Yes' position (approx 100px radius), try again
+    } while (attempts < 50 && (Math.abs(newX - (windowWidth / 2)) < 150 && Math.abs(newY - (windowHeight / 2)) < 150));
 
     return { x: newX, y: newY };
   };
 
-  const activateFloating = () => {
+  const moveButton = () => {
     if (!isFloating) setIsFloating(true);
     setNoPosition(generateRandomPosition());
     setPulseTrigger((prev) => prev + 1);
@@ -80,6 +77,7 @@ export default function ValentinesSpecial() {
     <div className="fixed inset-0 w-screen h-screen flex items-center justify-center bg-gradient-to-br from-pink-200 via-red-100 to-pink-300 overflow-hidden">
       <audio ref={audioRef} src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=romantic-love-111017.mp3" autoPlay loop />
 
+      {/* Main Card */}
       <div className="relative z-10 w-[85%] max-w-2xl p-10 md:p-20 text-center shadow-[0_20px_50px_rgba(255,182,193,0.5)] rounded-[3rem] bg-white/90 backdrop-blur-sm border border-white">
         <h1 className="text-4xl md:text-6xl font-black text-red-500 mb-16 leading-tight drop-shadow-sm">
           Shivani, will you be my Valentine? 💖
@@ -97,9 +95,9 @@ export default function ValentinesSpecial() {
 
           {!isFloating && (
             <button
-              onMouseEnter={activateFloating}
-              onTouchStart={activateFloating}
-              className="bg-slate-200 text-slate-600 text-xl md:text-2xl w-40 md:w-48 py-4 md:py-5 rounded-full font-bold border-2 border-slate-300 hover:bg-slate-300 transition-all"
+              onMouseEnter={moveButton}
+              onTouchStart={moveButton}
+              className="bg-slate-200 text-slate-600 text-xl md:text-2xl w-40 md:w-48 py-4 md:py-5 rounded-full font-bold border-2 border-slate-300 transition-all"
             >
               No 😢
             </button>
@@ -107,13 +105,14 @@ export default function ValentinesSpecial() {
         </div>
       </div>
 
+      {/* Floating "No" Button */}
       {isFloating && (
         <motion.div
           className="fixed z-50 pointer-events-auto"
           animate={{ x: noPosition.x, y: noPosition.y }}
-          transition={{ type: "spring", stiffness: 400, damping: 30 }}
-          onMouseEnter={activateFloating}
-          onTouchStart={activateFloating}
+          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+          onMouseEnter={moveButton}
+          onTouchStart={moveButton}
           style={{ top: 0, left: 0 }}
         >
           <button className="bg-slate-200 text-slate-600 text-xl w-40 py-4 rounded-full font-bold shadow-xl border border-slate-300">
