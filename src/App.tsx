@@ -26,48 +26,44 @@ export default function ValentinesSpecial() {
     });
   };
 
-  const generateRandomPosition = () => {
+  const generateRandomPosition = (currentX: number, currentY: number) => {
     const btnWidth = 160; 
     const btnHeight = 60;
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
 
-    // Define exactly where the 'Yes' button sits on the screen
-    // On desktop it's usually center-ish, on mobile it's stacked.
     const yesButtonArea = {
-      left: windowWidth / 2 - 120, 
-      right: windowWidth / 2 + 120,
-      top: windowHeight / 2 - 100,
+      left: windowWidth / 2 - 150, 
+      right: windowWidth / 2 + 150,
+      top: windowHeight / 2 - 150,
       bottom: windowHeight / 2 + 150,
     };
 
     let newX, newY;
     let attempts = 0;
 
-    do {
-      // Pick a random spot
-      newX = Math.max(10, Math.floor(Math.random() * (windowWidth - btnWidth)));
-      newY = Math.max(10, Math.floor(Math.random() * (windowHeight - btnHeight)));
+    while (attempts < 100) {
+      newX = Math.max(20, Math.floor(Math.random() * (windowWidth - btnWidth)));
+      newY = Math.max(20, Math.floor(Math.random() * (windowHeight - btnHeight)));
       attempts++;
 
-      // Check for overlap with the Yes button area
-      const overlapsX = newX + btnWidth > yesButtonArea.left && newX < yesButtonArea.right;
-      const overlapsY = newY + btnHeight > yesButtonArea.top && newY < yesButtonArea.bottom;
+      // 1. Collision check (Yes button)
+      const overlapsYes = newX + btnWidth > yesButtonArea.left && newX < yesButtonArea.right &&
+                          newY + btnHeight > yesButtonArea.top && newY < yesButtonArea.bottom;
+      
+      // 2. Distance check (Ensure it jumps at least 300px away from current spot)
+      const distance = Math.sqrt(Math.pow(newX - currentX, 2) + Math.pow(newY - currentY, 2));
 
-      if (!(overlapsX && overlapsY)) break; 
-    } while (attempts < 100);
+      if (!overlapsYes && distance > 300) break; 
+    }
 
     return { x: newX, y: newY };
   };
 
-  const moveButton = (e: React.MouseEvent | React.TouchEvent) => {
-    // Prevent default to stop mobile "ghost clicks" or scrolling
-    if (e.type === 'touchstart') {
-       // e.preventDefault(); // Uncomment if you want to block all other touch actions
-    }
-    
+  const moveButton = () => {
     if (!isFloating) setIsFloating(true);
-    setNoPosition(generateRandomPosition());
+    const nextPos = generateRandomPosition(noPosition.x, noPosition.y);
+    setNoPosition(nextPos);
     setPulseTrigger((prev) => prev + 1);
   };
 
@@ -95,7 +91,7 @@ export default function ValentinesSpecial() {
         </h1>
 
         <div className="flex flex-col md:flex-row items-center justify-center gap-6">
-          <motion.div key={pulseTrigger} animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 0.2 }}>
+          <motion.div key={pulseTrigger} animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 0.2 }}>
             <button
               onClick={handleAccept}
               className="bg-gradient-to-r from-red-500 to-pink-500 text-white text-xl md:text-2xl w-40 md:w-48 py-4 md:py-5 rounded-full font-bold shadow-lg active:scale-90"
@@ -118,14 +114,14 @@ export default function ValentinesSpecial() {
 
       {isFloating && (
         <motion.div
-          className="fixed z-50"
-          animate={{ x: noPosition.x, y: noPosition.y }}
-          transition={{ type: "spring", stiffness: 600, damping: 30 }}
+          className="fixed z-50 p-12" // Padding here creates the "Invisible hitbox"
+          animate={{ x: noPosition.x - 48, y: noPosition.y - 48 }} // Offsetting the padding
+          transition={{ type: "spring", stiffness: 1000, damping: 40 }}
           onMouseEnter={moveButton}
           onTouchStart={moveButton}
           style={{ top: 0, left: 0 }}
         >
-          <button className="bg-slate-200 text-slate-600 text-xl w-40 py-4 rounded-full font-bold shadow-xl border border-slate-300 pointer-events-auto">
+          <button className="bg-slate-200 text-slate-600 text-xl w-40 py-4 rounded-full font-bold shadow-xl border border-slate-300 pointer-events-none">
             No 😢
           </button>
         </motion.div>
