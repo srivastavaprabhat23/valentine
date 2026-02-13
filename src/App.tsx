@@ -44,7 +44,7 @@ export default function ValentinesSpecial() {
       
       // Calculate distance from the center where the buttons live
      // const distToCenterX = Math.abs(newX - (windowWidth / 2 - 80)); 
-      const distToCenterY = Math.abs(newY - (windowHeight / 2 + 50)); 
+      //const distToCenterY = Math.abs(newY - (windowHeight / 2 + 50)); 
 
       attempts++;
       // If the button is too close to the 'Yes' position (approx 100px radius), try again
