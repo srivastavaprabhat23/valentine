@@ -4,15 +4,18 @@ import confetti from "canvas-confetti";
 
 export default function ValentinesSpecial() {
   const [accepted, setAccepted] = useState(false);
-  const [noPosition, setNoPosition] = useState({ x: 0, y: 0 });
+  const [noPosition, setNoPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [pulseTrigger, setPulseTrigger] = useState(0);
   const [isFloating, setIsFloating] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  // Handle Autoplay Music
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = 0.5;
-      audioRef.current.play().catch(() => {});
+      audioRef.current.play().catch(() => {
+        console.log("Audio waiting for user interaction...");
+      });
     }
   }, []);
 
@@ -26,20 +29,22 @@ export default function ValentinesSpecial() {
     });
   };
 
-  const generateRandomPosition = (currentX: number, currentY: number) => {
-    const btnWidth = 160; 
+  const generateRandomPosition = (currentX: number, currentY: number): { x: number; y: number } => {
+    const btnWidth = 160;
     const btnHeight = 60;
-    const windowWidth = window.innerWidth;
-    const windowHeight = window.innerHeight;
+    const windowWidth = typeof window !== 'undefined' ? window.innerWidth : 800;
+    const windowHeight = typeof window !== 'undefined' ? window.innerHeight : 600;
 
+    // Define Yes Button Area to Avoid (Center Region)
     const yesButtonArea = {
-      left: windowWidth / 2 - 150, 
+      left: windowWidth / 2 - 150,
       right: windowWidth / 2 + 150,
       top: windowHeight / 2 - 150,
       bottom: windowHeight / 2 + 150,
     };
 
-    let newX, newY;
+    let newX = 0;
+    let newY = 0;
     let attempts = 0;
 
     while (attempts < 100) {
@@ -47,17 +52,17 @@ export default function ValentinesSpecial() {
       newY = Math.max(20, Math.floor(Math.random() * (windowHeight - btnHeight)));
       attempts++;
 
-      // 1. Collision check (Yes button)
+      // Check for overlap with Yes button
       const overlapsYes = newX + btnWidth > yesButtonArea.left && newX < yesButtonArea.right &&
                           newY + btnHeight > yesButtonArea.top && newY < yesButtonArea.bottom;
       
-      // 2. Distance check (Ensure it jumps at least 300px away from current spot)
+      // Ensure the jump is far enough (minimum 300px distance)
       const distance = Math.sqrt(Math.pow(newX - currentX, 2) + Math.pow(newY - currentY, 2));
 
-      if (!overlapsYes && distance > 300) break; 
+      if (!overlapsYes && distance > 300) break;
     }
 
-    return { x: newX, y: newY };
+    return { x: newX || 20, y: newY || 20 };
   };
 
   const moveButton = () => {
@@ -85,6 +90,7 @@ export default function ValentinesSpecial() {
     <div className="fixed inset-0 w-screen h-screen flex items-center justify-center bg-gradient-to-br from-pink-200 via-red-100 to-pink-300 overflow-hidden touch-none">
       <audio ref={audioRef} src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=romantic-love-111017.mp3" autoPlay loop />
 
+      {/* Main Container Card */}
       <div className="relative z-10 w-[85%] max-w-2xl p-10 md:p-20 text-center shadow-[0_20px_50px_rgba(255,182,193,0.5)] rounded-[3rem] bg-white/90 backdrop-blur-sm border border-white">
         <h1 className="text-4xl md:text-6xl font-black text-red-500 mb-16 leading-tight drop-shadow-sm">
           Shivani, will you be my Valentine? 💖
@@ -112,10 +118,11 @@ export default function ValentinesSpecial() {
         </div>
       </div>
 
+      {/* Floating "No" Button with Invisible Hitbox */}
       {isFloating && (
         <motion.div
-          className="fixed z-50 p-12" // Padding here creates the "Invisible hitbox"
-          animate={{ x: noPosition.x - 48, y: noPosition.y - 48 }} // Offsetting the padding
+          className="fixed z-50 p-16" // This large padding makes the button jump "before" she touches it
+          animate={{ x: noPosition.x - 64, y: noPosition.y - 64 }} // Offset the padding
           transition={{ type: "spring", stiffness: 1000, damping: 40 }}
           onMouseEnter={moveButton}
           onTouchStart={moveButton}
