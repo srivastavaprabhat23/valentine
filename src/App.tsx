@@ -27,12 +27,33 @@ export default function ValentinesSpecial() {
   };
 
   const generateRandomPosition = () => {
-    const maxX = window.innerWidth - 180;
-    const maxY = window.innerHeight - 80;
-    return {
-      x: Math.max(20, Math.floor(Math.random() * maxX)),
-      y: Math.max(20, Math.floor(Math.random() * maxY)),
+    const btnWidth = 160;
+    const btnHeight = 60;
+    
+    // Get the center card's position to avoid it
+    const safeZone = {
+      left: window.innerWidth / 2 - 250,
+      right: window.innerWidth / 2 + 250,
+      top: window.innerHeight / 2 - 200,
+      bottom: window.innerHeight / 2 + 200,
     };
+
+    let newX, newY;
+    let attempts = 0;
+
+    // Keep generating until the "No" button is outside the center card area
+    do {
+      newX = Math.max(20, Math.floor(Math.random() * (window.innerWidth - btnWidth)));
+      newY = Math.max(20, Math.floor(Math.random() * (window.innerHeight - btnHeight)));
+      attempts++;
+      // Break after 20 attempts to prevent infinite loop (fallback)
+    } while (
+      attempts < 20 &&
+      newX > safeZone.left && newX < safeZone.right &&
+      newY > safeZone.top && newY < safeZone.bottom
+    );
+
+    return { x: newX, y: newY };
   };
 
   const activateFloating = () => {
@@ -40,9 +61,6 @@ export default function ValentinesSpecial() {
     setNoPosition(generateRandomPosition());
     setPulseTrigger((prev) => prev + 1);
   };
-
-  // NOTE: Auto-float interval has been removed per your request.
-  // The button will only move when interacted with.
 
   if (accepted) {
     return (
